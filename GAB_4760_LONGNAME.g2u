@@ -1,0 +1,371 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.F_LongName..Create
+Gui.F_LongName..Caption("Propsect/Suspect Long Name")
+Gui.F_LongName..Size(9210,2175)
+Gui.F_LongName..MinX(0)
+Gui.F_LongName..MinY(0)
+Gui.F_LongName..Position(0,0)
+Gui.F_LongName..BackColor(-2147483633)
+Gui.F_LongName..MousePointer(0)
+Gui.F_LongName..Sizeable(False)
+Gui.F_LongName..Event(UnLoad,F_LongName_Unload)
+Gui.F_LongName.txtLong.Create(TextboxM)
+Gui.F_LongName.txtLong.Size(8775,855)
+Gui.F_LongName.txtLong.Position(90,90)
+Gui.F_LongName.txtLong.MaxLength(255)
+Gui.F_LongName.cmdSave.Create(Button)
+Gui.F_LongName.cmdSave.Size(1290,465)
+Gui.F_LongName.cmdSave.Position(90,1020)
+Gui.F_LongName.cmdSave.Caption("Save")
+Gui.F_LongName.cmdSave.Event(Click,ProspectLongNameUpdate)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+V.Local.sIcon.Declare
+V.Local.sID.Declare
+V.Local.sLongName.Declare
+
+F.Intrinsic.Control.If(V.Caller.GSSVersion,<=,"2019.1")
+	'Customer
+	'Open - Populate
+	F.Intrinsic.Control.If(V.Caller.Hook,=,"14350")
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PL",342)
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PT",520)
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PW",425)
+		F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-TEXT-1,"LOCK",0)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PL",342)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PT",503)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PW",150)
+		V.Passed.GAB-LBL-1.Set("Long Name")
+		F.Intrinsic.Control.CallSub(customerlongnameload)
+		F.Intrinsic.Control.End
+	
+	'Open - Post Save
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"14385")
+		F.Intrinsic.Control.CallSub(customerlongnameupdate)
+	'View - Populate
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"14310")
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PL",342)
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PT",527)
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PW",425)
+		F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-TEXT-1,"LOCK",0)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PL",342)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PT",510)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PW",150)
+		V.Passed.GAB-LBL-1.Set("Long Name")
+		F.Intrinsic.Control.CallSub(customerlongnameload)
+		F.Intrinsic.Control.End
+	
+	'New - Post Save
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"14346")
+		V.Local.sLongName.Set(V.Passed.GAB-TEXT-1)
+		F.Intrinsic.Control.If(V.Local.sLongName.Trim,<>,"")
+			F.Intrinsic.Control.CallSub(customerlongnameupdate)
+		F.Intrinsic.Control.EndIf
+	'----------------------------------------------------------------------
+	'Vendor	
+	'New - Populate
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"14460")
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PL",48)
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PT",458)
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PW",425)
+		F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-TEXT-1,"LOCK",0)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PL",48)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PT",441)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PW",55)
+		V.Passed.GAB-LBL-1.Set("Long Name")
+	'Vendor select
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"14461")
+		F.Intrinsic.Control.CallSub(vendorlongnameload)
+	'Post save
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"14470")
+		F.Intrinsic.Control.CallSub(vendorlongnameupdate)
+	'----------------------------------------------------------------------
+	'Prospect/Suspect
+	'Populate
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"29810")
+		V.Passed.000201.Set("Long Name")
+	'Script 1
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"29820")
+		V.Local.sID.Set(V.Passed.000002)
+		F.Intrinsic.Control.If(V.Local.sID.Trim,<>,"")
+			F.Intrinsic.String.Build("{0}\ART\gss2.ico",V.Caller.GlobalDir,V.Local.sIcon)
+			Gui.F_LongName..Icon(V.Local.sIcon)
+			F.Intrinsic.Control.CallSub(prospectlongnameload)
+			Gui.F_LongName..Show
+		F.Intrinsic.Control.EndIf
+	'----------------------------------------------------------------------
+	'Converting prospect to customer
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"45260")
+		F.Intrinsic.Control.CallSub(convertprospecttocustomer)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	'2020.1 and above
+	'Customer
+	'Open - Populate
+	F.Intrinsic.Control.If(V.Caller.Hook,=,"14350")
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PL",342)
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PT",550)
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PW",4250)
+		F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-TEXT-1,"LOCK",0)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PL",342)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PT",533)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PW",150)
+		V.Passed.GAB-LBL-1.Set("Long Name")
+		F.Intrinsic.Control.CallSub(customerlongnameload)
+		F.Intrinsic.Control.End
+	
+	'Open - Post Save
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"14385")
+		F.Intrinsic.Control.CallSub(customerlongnameupdate)
+	'View - Populate
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"14310")
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PL",342)
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PT",540)
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PW",4250)
+		F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-TEXT-1,"LOCK",0)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PL",342)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PT",523)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PW",150)
+		V.Passed.GAB-LBL-1.Set("Long Name")
+		F.Intrinsic.Control.CallSub(customerlongnameload)
+		F.Intrinsic.Control.End
+	
+	'New - Post Save
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"14346")
+		V.Local.sLongName.Set(V.Passed.GAB-TEXT-1)
+		F.Intrinsic.Control.If(V.Local.sLongName.Trim,<>,"")
+			F.Intrinsic.Control.CallSub(customerlongnameupdate)
+		F.Intrinsic.Control.EndIf
+	'----------------------------------------------------------------------
+	'Vendor	
+	'New - Populate
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"14460")
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PL",48)
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PT",458)
+		F.Intrinsic.Variable.SetProperty("GAB-TEXT-1","PW",4250)
+		F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-TEXT-1,"LOCK",0)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PL",48)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PT",441)
+		F.Intrinsic.Variable.SetProperty("GAB-LBL-1","PW",55)
+		V.Passed.GAB-LBL-1.Set("Long Name")
+	'Vendor select
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"14461")
+		F.Intrinsic.Control.CallSub(vendorlongnameload)
+	'Post save
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"14470")
+		F.Intrinsic.Control.CallSub(vendorlongnameupdate)
+	'----------------------------------------------------------------------
+	'Prospect/Suspect
+	'New - Populate
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"29810")
+		V.Passed.000201.Set("Long Name")
+	'Script 1
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"29820")
+		V.Local.sID.Set(V.Passed.000002)
+		F.Intrinsic.Control.If(V.Local.sID.Trim,<>,"")
+			F.Intrinsic.String.Build("{0}\ART\gss2.ico",V.Caller.GlobalDir,V.Local.sIcon)
+			Gui.F_LongName..Icon(V.Local.sIcon)
+			F.Intrinsic.Control.CallSub(prospectlongnameload)
+			Gui.F_LongName..Show
+		F.Intrinsic.Control.EndIf
+	'----------------------------------------------------------------------
+	'Converting prospect to customer
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"45260")
+		F.Intrinsic.Control.CallSub(convertprospecttocustomer)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+Program.Sub.Main.End
+
+Program.Sub.CustomerLongNameLoad.Start
+V.Local.bExist.Declare
+V.Local.sCustomer.Declare
+V.Local.sSQL.Declare(String)
+F.odbc.Connection!conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+f.Intrinsic.Control.If(V.Caller.Hook,=,"14350")
+	V.Local.sCustomer.Set(V.Passed.000002)
+f.Intrinsic.Control.Else
+	V.Local.sCustomer.Set(V.Passed.000004)
+f.Intrinsic.Control.EndIf
+'Check if table exists
+F.ODBC.Connection!conx.TableExists("GAB_CUSTOMER_LONG",V.Local.bExist)
+F.Intrinsic.Control.If(V.Local.bExist,=,False)
+	F.ODBC.Connection!conx.Execute("CREATE TABLE GAB_CUSTOMER_LONG(CUSTOMER CHAR(6),CUSTOMERLONG VARCHAR(255));")
+F.Intrinsic.Control.EndIf
+F.Intrinsic.String.Concat("SELECT CUSTOMERLONG FROM GAB_CUSTOMER_LONG WHERE CUSTOMER='",V.Local.sCustomer.Trim,"'",V.Local.sSql)
+F.ODBC.connection!conx.OpenRecordsetRO("rstCustomer",V.Local.sSql)
+F.Intrinsic.Control.If(V.ODBC.conx!rstCustomer.EOF,=,False)
+	V.Passed.GAB-TEXT-1.Set(V.ODBC.conx!rstCustomer.FieldVal!CUSTOMERLONG)
+F.Intrinsic.Control.EndIf
+F.ODBC.conx!rstCustomer.Close
+'Check if data exists in GAB_PROSPECT_LONG
+F.Intrinsic.Control.If(V.Caller.Switches,=,"E")
+	F.ODBC.Connection!conx.TableExists("GAB_PROSPECT_LONG",V.Local.bExist)
+	F.Intrinsic.Control.If(V.Local.bExist,=,True)
+		F.Intrinsic.String.Concat("SELECT PROSPECTLONG FROM GAB_PROSPECT_LONG WHERE PROSPECT='",V.Local.sCustomer.Trim,"'",V.Local.sSql)
+		F.ODBC.connection!conx.OpenRecordsetRO("rstProspect",V.Local.sSql)
+		F.Intrinsic.Control.If(V.ODBC.conx!rstProspect.EOF,=,False)
+			V.Passed.GAB-TEXT-1.Set(V.ODBC.conx!rstProspect.FieldVal!PROSPECTLONG)
+		F.Intrinsic.Control.EndIf
+		F.ODBC.conx!rstProspect.Close
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+F.ODBC.Connection!conx.Close
+Program.Sub.CustomerLongNameLoad.End
+
+Program.Sub.CustomerLongNameUpdate.Start
+V.Local.bExist.Declare
+V.Local.sCustomer.Declare
+V.Local.sSql.Declare(String)
+F.odbc.Connection!conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+'Check if table exists
+F.ODBC.Connection!conx.TableExists("GAB_CUSTOMER_LONG",V.Local.bExist)
+F.Intrinsic.Control.If(V.Local.bExist,=,False)
+	F.ODBC.Connection!conx.Execute("CREATE TABLE GAB_CUSTOMER_LONG(CUSTOMER CHAR(6),CUSTOMERLONG VARCHAR(255));")
+F.Intrinsic.Control.EndIf
+V.Local.sCustomer.Set(V.Passed.000002)
+V.Local.sSql.Set("SELECT CUSTOMER, CUSTOMERLONG FROM GAB_CUSTOMER_LONG")
+F.Intrinsic.String.Concat(V.Local.sSql," WHERE CUSTOMER='",V.Local.sCustomer.Trim,"'",V.Local.sSql)
+F.ODBC.connection!conx.OpenRecordsetRW("rstCustomer",V.Local.sSql)
+F.Intrinsic.Control.If(V.ODBC.conx!rstCustomer.EOF,=,True)
+	F.ODBC.conx!rstCustomer.AddNew
+F.Intrinsic.Control.EndIf
+F.ODBC.conx!rstCustomer.Set!CUSTOMER(V.Local.sCustomer.Trim)
+F.ODBC.conx!rstCustomer.Set!CUSTOMERLONG(V.Passed.GAB-TEXT-1)
+F.ODBC.conx!rstCustomer.Update
+F.ODBC.conx!rstCustomer.Close
+'Check for prospect long and if exists, delete the entry from GAB_PROSPECT_LONG
+F.Intrinsic.Control.If(V.Caller.Switches,=,"E")
+	F.ODBC.Connection!conx.TableExists("GAB_PROSPECT_LONG",V.Local.bExist)
+	F.Intrinsic.Control.If(V.Local.bExist,=,True)
+		F.Intrinsic.String.Concat("SELECT PROSPECTLONG FROM GAB_PROSPECT_LONG WHERE PROSPECT='",V.Local.sCustomer.Trim,"'",V.Local.sSql)
+		F.ODBC.connection!conx.OpenRecordsetRO("rstProspect",V.Local.sSql)
+		F.Intrinsic.Control.If(V.ODBC.conx!rstProspect.EOF,=,False)
+			F.Intrinsic.String.Concat("DELETE FROM GAB_PROSPECT_LONG WHERE PROSPECT='",V.Local.sCustomer.Trim,"'",V.Local.sSql)
+			F.ODBC.Connection!conx.Execute(V.Local.sSql)
+		F.Intrinsic.Control.EndIf
+		F.ODBC.conx!rstProspect.Close
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+F.ODBC.Connection!conx.Close
+Program.Sub.CustomerLongNameUpdate.End
+
+Program.Sub.VendorLongNameLoad.Start
+V.Local.bExist.Declare
+V.Local.sVendor.Declare
+V.Local.sSQL.Declare(String)
+F.odbc.Connection!conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+V.Local.sVendor.Set(V.Passed.000002)
+'Check if table exists
+F.ODBC.Connection!conx.TableExists("GAB_VENDOR_LONG",V.Local.bExist)
+F.Intrinsic.Control.If(V.Local.bExist,=,False)
+	F.ODBC.Connection!conx.Execute("CREATE TABLE GAB_VENDOR_LONG(VENDOR CHAR(6),VENDORLONG VARCHAR(255));")
+F.Intrinsic.Control.EndIf
+F.Intrinsic.String.Concat("SELECT VENDORLONG FROM GAB_VENDOR_LONG WHERE VENDOR='",V.Local.sVendor.Trim,"'",V.Local.sSql)
+F.ODBC.connection!conx.OpenRecordsetRO("rstVendor",V.Local.sSql)
+F.Intrinsic.Control.If(V.ODBC.conx!rstVendor.EOF,=,False)
+	V.Passed.GAB-TEXT-1.Set(V.ODBC.conx!rstVendor.FieldVal!VENDORLONG)
+F.Intrinsic.Control.EndIf
+F.ODBC.conx!rstVendor.Close
+F.ODBC.Connection!conx.Close
+Program.Sub.VendorLongNameLoad.End
+
+Program.Sub.VendorLongNameUpdate.Start
+V.Local.bExist.Declare
+V.Local.sVendor.Declare
+V.Local.sSql.Declare(String)
+F.odbc.Connection!conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+'Check if table exists
+F.ODBC.Connection!conx.TableExists("GAB_VENDOR_LONG",V.Local.bExist)
+F.Intrinsic.Control.If(V.Local.bExist,=,False)
+	F.ODBC.Connection!conx.Execute("CREATE TABLE GAB_VENDOR_LONG(VENDOR CHAR(6),VENDORLONG VARCHAR(255));")
+F.Intrinsic.Control.EndIf
+V.Local.sVendor.Set(V.Passed.000002)
+V.Local.sSql.Set("SELECT VENDOR, VENDORLONG FROM GAB_VENDOR_LONG")
+F.Intrinsic.String.Concat(V.Local.sSql," WHERE VENDOR='",V.Local.sVendor.Trim,"'",V.Local.sSql)
+F.ODBC.connection!conx.OpenRecordsetRW("rstVendor",V.Local.sSql)
+F.Intrinsic.Control.If(V.ODBC.conx!rstVendor.EOF,=,True)
+	F.ODBC.conx!rstVendor.AddNew
+F.Intrinsic.Control.EndIf
+F.ODBC.conx!rstVendor.Set!VENDOR(V.Local.sVendor.Trim)
+F.ODBC.conx!rstVendor.Set!VENDORLONG(V.Passed.GAB-TEXT-1)
+F.ODBC.conx!rstVendor.Update
+F.ODBC.conx!rstVendor.Close
+F.ODBC.Connection!conx.Close
+Program.Sub.VendorLongNameUpdate.End
+
+Program.Sub.ProspectLongNameLoad.Start
+V.Local.bExist.Declare
+V.Local.sProspect.Declare
+V.Local.sSQL.Declare(String)
+F.odbc.Connection!conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+V.Local.sProspect.Set(V.Passed.000002)
+'Check if table exists
+F.ODBC.Connection!conx.TableExists("GAB_PROSPECT_LONG",V.Local.bExist)
+F.Intrinsic.Control.If(V.Local.bExist,=,False)
+	F.ODBC.Connection!conx.Execute("CREATE TABLE GAB_PROSPECT_LONG(PROSPECT CHAR(6),PROSPECTLONG VARCHAR(255));")
+F.Intrinsic.Control.EndIf
+F.Intrinsic.String.Concat("SELECT PROSPECTLONG FROM GAB_PROSPECT_LONG WHERE PROSPECT='",V.Local.sProspect.Trim,"'",V.Local.sSql)
+F.ODBC.connection!conx.OpenRecordsetRO("rstProspect",V.Local.sSql)
+F.Intrinsic.Control.If(V.ODBC.conx!rstProspect.EOF,=,False)
+	Gui.F_LongName.txtLong.Text(V.ODBC.conx!rstProspect.FieldValTrim!PROSPECTLONG)
+F.Intrinsic.Control.EndIf
+F.ODBC.conx!rstProspect.Close
+F.ODBC.Connection!conx.Close
+Program.Sub.ProspectLongNameLoad.End
+
+Program.Sub.F_LongName_Unload.Start
+F.Intrinsic.Control.End
+
+Program.Sub.F_LongName_Unload.End
+
+Program.Sub.ProspectLongNameUpdate.Start
+V.Local.sLongName.Declare
+V.Local.sProspect.Declare
+V.Local.sSql.Declare(String)
+F.odbc.Connection!conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+V.Local.sProspect.Set(V.Passed.000002)
+V.Local.sLongName.Set(V.Screen.F_LongName!txtLong.Text)
+V.Local.sSql.Set("SELECT PROSPECT, PROSPECTLONG FROM GAB_PROSPECT_LONG")
+F.Intrinsic.String.Concat(V.Local.sSql," WHERE PROSPECT='",V.Local.sProspect.Trim,"'",V.Local.sSql)
+F.ODBC.connection!conx.OpenRecordsetRW("rstProspect",V.Local.sSql)
+F.Intrinsic.Control.If(V.ODBC.conx!rstProspect.EOF,=,True)
+	F.ODBC.conx!rstProspect.AddNew
+F.Intrinsic.Control.EndIf
+F.ODBC.conx!rstProspect.Set!PROSPECT(V.Local.sProspect.Trim)
+F.ODBC.conx!rstProspect.Set!PROSPECTLONG(V.Local.sLongName.Trim)
+F.ODBC.conx!rstProspect.Update
+F.ODBC.conx!rstProspect.Close
+F.ODBC.Connection!conx.Close
+F.Intrinsic.Control.CallSub(f_longname_unload)
+Program.Sub.ProspectLongNameUpdate.End
+
+Program.Sub.ConvertProspectToCustomer.Start
+V.Local.sProspect.Declare
+V.Local.sSQL.Declare(String)
+F.odbc.Connection!conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+V.Local.sProspect.Set(V.Passed.000002)
+F.Intrinsic.String.Concat("SELECT PROSPECT, PROSPECTLONG FROM GAB_PROSPECT_LONG WHERE PROSPECT='",V.Local.sProspect.Trim,"'",V.Local.sSql)
+F.ODBC.connection!conx.OpenRecordsetRO("rstProspect",V.Local.sSql)
+F.Intrinsic.Control.If(V.ODBC.conx!rstProspect.EOF,=,False)
+	'Store prospect long name to customer long name
+	F.Intrinsic.String.Build("insert into GAB_Customer_Long(CUSTOMER, CUSTOMERLONG) values('{0}','{1}');",V.ODBC.conx!rstProspect.FieldValTrim!PROSPECT,V.ODBC.conx!rstProspect.FieldValTrim!PROSPECTLONG,V.Local.sSQL)
+	F.ODBC.Connection!conx.Execute(V.Local.sSQL)
+	'Delete prospect long name record
+	F.Intrinsic.String.Concat("DELETE FROM GAB_PROSPECT_LONG WHERE PROSPECT='",V.Local.sProspect.Trim,"'",V.Local.sSql)
+	F.ODBC.Connection!conx.Execute(V.Local.sSQL)
+F.Intrinsic.Control.EndIf
+F.ODBC.conx!rstProspect.Close
+F.ODBC.Connection!conx.Close
+Program.Sub.ConvertProspectToCustomer.End
+
+Program.Sub.Comments.Start
+${$0$}$Long Name Entry for Customer, Vendor, Prospect and Suspect$}$MHERTANTO$}$22/8/2017 10:34:32 AM$}$True
+${$3$}$0$}$$}$0$}$-1$}$$}$12:00:00 AM$}$Program to enter long name (more than 30 characters) for customer, vendor, prospect and suspect.
+${$5$}$2.0.0.0$}$2
+${$6$}$tdjohan$}$20210915142605692$}$8rAQhOSvlohpQhMDm1j544LwmwXnRbkhE0PSrWyQg8eTbKEeLZdEyc6H+2aV+ttiOHoO9XQKybY=
+Program.Sub.Comments.End
