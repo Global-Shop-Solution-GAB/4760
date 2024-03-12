@@ -1,0 +1,108 @@
+﻿Program.Sub.Preflight.Start
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+	
+V.Local.bExist.Declare
+V.Local.sLabel.Declare
+V.Local.sSQL.Declare
+V.Local.sType.Declare
+
+F.Intrinsic.Control.If(V.Caller.Hook,=,"42903")
+	'Hook 42903
+	F.ODBC.Connection!Conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+	V.Local.sType.Set(V.Passed.DATA-CRM-CompTypeAlpha)
+	F.Intrinsic.Control.If(V.Local.sType.Trim,=,"C")
+		'Customer
+		F.ODBC.Connection!conx.TableExists("GAB_CUSTOMER_LONG",V.Local.bExist)
+		F.Intrinsic.Control.If(V.Local.bExist,=,True)
+			F.Intrinsic.String.Build("select customerlong from GAB_Customer_Long where customer = '{0}'",V.Passed.DATA-CRM-CompID,V.Local.sSQL)
+			F.ODBC.Connection!Conx.OpenLocalRecordsetRO("rst",V.Local.sSQL)
+			F.Intrinsic.Control.If(V.ODBC.Conx!rst.EOF,=,False)
+				F.Intrinsic.String.Build("{0} ({1})",V.ODBC.Conx!rst.FieldValTrim!customerlong,V.Passed.DATA-CRM-CompID,V.Local.sLabel)
+				V.Passed.CRM-lblCoName.Set(V.Local.sLabel)
+			F.Intrinsic.Control.EndIf
+			F.ODBC.Conx!rst.Close
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.ElseIf(V.Local.sType.Trim,=,"V")
+		'Vendor
+		F.ODBC.Connection!conx.TableExists("GAB_VENDOR_LONG",V.Local.bExist)
+		F.Intrinsic.Control.If(V.Local.bExist,=,True)
+			F.Intrinsic.String.Build("select vendorlong from GAB_Vendor_Long where vendor = '{0}'",V.Passed.DATA-CRM-CompID,V.Local.sSQL)
+			F.ODBC.Connection!Conx.OpenLocalRecordsetRO("rst",V.Local.sSQL)
+			F.Intrinsic.Control.If(V.ODBC.Conx!rst.EOF,=,False)
+				F.Intrinsic.String.Build("{0} ({1})",V.ODBC.Conx!rst.FieldValTrim!vendorlong,V.Passed.DATA-CRM-CompID,V.Local.sLabel)
+				V.Passed.CRM-lblCoName.Set(V.Local.sLabel)
+			F.Intrinsic.Control.EndIf
+			F.ODBC.Conx!rst.Close
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Else
+		'Prospect and suspect
+		F.ODBC.Connection!conx.TableExists("GAB_PROSPECT_LONG",V.Local.bExist)
+		F.Intrinsic.Control.If(V.Local.bExist,=,True)
+			F.Intrinsic.String.Build("select prospectlong from GAB_Prospect_Long where prospect = '{0}'",V.Passed.DATA-CRM-CompID,V.Local.sSQL)
+			F.ODBC.Connection!Conx.OpenLocalRecordsetRO("rst",V.Local.sSQL)
+			F.Intrinsic.Control.If(V.ODBC.Conx!rst.EOF,=,False)
+				F.Intrinsic.String.Build("{0} ({1})",V.ODBC.Conx!rst.FieldValTrim!prospectlong,V.Passed.DATA-CRM-CompID,V.Local.sLabel)
+				V.Passed.CRM-lblCoName.Set(V.Local.sLabel)
+			F.Intrinsic.Control.EndIf
+			F.ODBC.Conx!rst.Close
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+	F.ODBC.Connection!Conx.Close
+F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"51010")
+	'Hook 51010
+	F.ODBC.Connection!Conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+	V.Local.sType.Set(V.Passed.DATA-CRM-CompTypeAlpha)
+	F.Intrinsic.Control.If(V.Local.sType.Trim,=,"C")
+		'Customer
+		F.ODBC.Connection!conx.TableExists("GAB_CUSTOMER_LONG",V.Local.bExist)
+		F.Intrinsic.Control.If(V.Local.bExist,=,True)
+			F.Intrinsic.String.Build("select customerlong from GAB_Customer_Long where customer = '{0}'",V.Passed.DATA-CRM-CompID,V.Local.sSQL)
+			F.ODBC.Connection!Conx.OpenLocalRecordsetRO("rst",V.Local.sSQL)
+			F.Intrinsic.Control.If(V.ODBC.Conx!rst.EOF,=,False)
+'				F.Intrinsic.String.Build("{0} ({1})",V.ODBC.Conx!rst.FieldValTrim!customerlong,V.Passed.DATA-CRM-CompID,V.Local.sLabel)
+'				V.Passed.CRM-lblCoName.Set(V.Local.sLabel)
+				V.Passed.CRM-txtCompName.Set(V.ODBC.Conx!rst.FieldValTrim!customerlong)
+			F.Intrinsic.Control.EndIf
+			F.ODBC.Conx!rst.Close
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.ElseIf(V.Local.sType.Trim,=,"V")
+		'Vendor
+		F.ODBC.Connection!conx.TableExists("GAB_VENDOR_LONG",V.Local.bExist)
+		F.Intrinsic.Control.If(V.Local.bExist,=,True)
+			F.Intrinsic.String.Build("select vendorlong from GAB_Vendor_Long where vendor = '{0}'",V.Passed.DATA-CRM-CompID,V.Local.sSQL)
+			F.ODBC.Connection!Conx.OpenLocalRecordsetRO("rst",V.Local.sSQL)
+			F.Intrinsic.Control.If(V.ODBC.Conx!rst.EOF,=,False)
+'				F.Intrinsic.String.Build("{0} ({1})",V.ODBC.Conx!rst.FieldValTrim!vendorlong,V.Passed.DATA-CRM-CompID,V.Local.sLabel)
+'				V.Passed.CRM-lblCoName.Set(V.Local.sLabel)
+				V.Passed.CRM-txtCompName.Set(V.ODBC.Conx!rst.FieldValTrim!vendorlong)
+			F.Intrinsic.Control.EndIf
+			F.ODBC.Conx!rst.Close
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Else
+		'Prospect and suspect
+		F.ODBC.Connection!conx.TableExists("GAB_PROSPECT_LONG",V.Local.bExist)
+		F.Intrinsic.Control.If(V.Local.bExist,=,True)
+			F.Intrinsic.String.Build("select prospectlong from GAB_Prospect_Long where prospect = '{0}'",V.Passed.DATA-CRM-CompID,V.Local.sSQL)
+			F.ODBC.Connection!Conx.OpenLocalRecordsetRO("rst",V.Local.sSQL)
+			F.Intrinsic.Control.If(V.ODBC.Conx!rst.EOF,=,False)
+'				F.Intrinsic.String.Build("{0} ({1})",V.ODBC.Conx!rst.FieldValTrim!prospectlong,V.Passed.DATA-CRM-CompID,V.Local.sLabel)
+'				V.Passed.CRM-lblCoName.Set(V.Local.sLabel)
+				V.Passed.CRM-txtCompName.Set(V.ODBC.Conx!rst.FieldValTrim!prospectlong)
+			F.Intrinsic.Control.EndIf
+			F.ODBC.Conx!rst.Close
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+	F.ODBC.Connection!Conx.Close
+F.Intrinsic.Control.EndIf
+
+Program.Sub.Main.End
+
+Program.Sub.Comments.Start
+${$0$}$Change Company Name to Customer Longname$}$MHERTANTO$}$6/7/2017 3:24:10 AM$}$False
+${$3$}$0$}$$}$0$}$-1$}$$}$12:00:00 AM$}$This program updates customer, vendor, and prospect/suspect name in CRM screen to the long name. Long name custom program is required to run this program.
+${$5$}$2.0.0.0$}$2
+${$6$}$tdjohan$}$20210915143708885$}$8rAQhOSvlohpQhMDm1j544LwmwXnRbkhE0PSrWyQg8eTbKEeLZdEyU8E/1qrqhB6QjhMdGZVL5w=
+Program.Sub.Comments.End
